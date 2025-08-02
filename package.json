@@ -1,0 +1,82 @@
+{
+  "name": "dis-platform-dirs",
+  "version": "0.0.1",
+  "description": "Zero-dependency Bun/Node.js implementation of Python's platformdirs for determining platform-specific user directories.",
+  "type": "module",
+  "author": {
+    "name": "Defend I.T. Solutions LLC",
+    "url": "https://www.wedefendit.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/defendit/platform-dirs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/defendit/platform-dirs/issues"
+  },
+  "homepage": "https://github.com/defendit/platform-dirs#readme",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "iife": "./dist/index.iife.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/index.iife.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.esm.js"
+    },
+    "./iife": {
+      "default": "./dist/index.iife.js"
+    }
+  },
+  "files": [
+    "dist",
+    "index.ts"
+  ],
+  "keywords": [
+    "platformdirs",
+    "platform-dirs",
+    "dis-platform-dirs",
+    "directories",
+    "node",
+    "bun",
+    "typescript",
+    "zero-dependencies",
+    "cross-platform"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "test": "bun test",
+    "test:darwin": "bun test tests/darwin.test.ts",
+    "test:linux": "bun test tests/linux.test.ts",
+    "test:win32": "bun test tests/win32.test.ts",
+    "coverage": "bunx vitest run --coverage",
+    "lint": "bunx eslint . --ext .ts",
+    "lint:fix": "bunx eslint . --ext .ts --fix",
+    "prettier": "bunx prettier --check *.ts",
+    "prettier:fix": "bunx prettier --write *.ts",
+    "clean": "rm -rf ./dist",
+    "build": "bun run clean && bun run build:all",
+    "build:types": "bunx tsc --project tsconfig.json",
+    "build:esm": "bun build index.ts --outfile dist/index.esm.js --target node --format esm",
+    "build:cjs": "bun build index.ts --outfile dist/index.cjs.js --target node --format cjs",
+    "build:iife": "bun build index.ts --outfile dist/index.iife.js --target node --format iife",
+    "build:all": "bun run build:esm && bun run build:cjs && bun run build:iife && bun run build:types"
+  }
+}
