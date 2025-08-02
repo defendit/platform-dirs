@@ -1,6 +1,6 @@
 {
   "name": "dis-platform-dirs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Zero-dependency Bun/Node.js implementation of Python's platformdirs for determining platform-specific user directories.",
   "type": "module",
   "author": {
