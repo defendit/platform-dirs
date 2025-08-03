@@ -23,20 +23,31 @@ SOFTWARE.
 */
 
 import { platform } from 'os';
-import { darwin } from './platforms/darwin';
-import { linuxPaths } from './platforms/linux';
-import type { PlatformPathsMap } from './types';
-import { windowsPaths } from './platforms/win32';
+
+import { linuxDirs } from './platforms/linux';
+import { darwinDirs } from './platforms/darwin';
+import { windowsDirs } from './platforms/win32';
+import type { DarwinDirs, LinuxDirs, PlatformDirsMap, WindowsDirs } from './types';
 
 /**
- * Platform-specific paths based on the current Node.js platform.
+ * Returns platform-specific paths based on the current Node.js platform.
  *
- * This object provides methods to retrieve directories for user data, configuration,
- * cache, logs, and other common directories based on the operating system.
+ * @param osPlatform - Optional platform to override the detected one.
+ * @returns Platform-specific paths object.
+ *
+ * @example
+ * platformDirs(); // Returns paths for the current platform
+ * platformDirs('linux'); // Returns Linux paths
+ * platformDirs('win32'); // Returns Windows paths
+ * platformDirs('darwin'); // Returns macOS paths
  */
-export function platformPaths(osPlatform?: NodeJS.Platform): PlatformPathsMap[NodeJS.Platform] {
+export function platformDirs(platform: 'linux'): LinuxDirs;
+export function platformDirs(platform: 'win32'): WindowsDirs;
+export function platformDirs(platform: 'darwin'): DarwinDirs;
+export function platformDirs(): PlatformDirsMap[NodeJS.Platform];
+export function platformDirs(osPlatform?: NodeJS.Platform): PlatformDirsMap[NodeJS.Platform] {
   const _platform: NodeJS.Platform = osPlatform ?? platform();
-  if (_platform === 'win32') return windowsPaths;
-  if (_platform === 'darwin') return darwin;
-  return linuxPaths;
+  if (_platform === 'win32') return windowsDirs;
+  if (_platform === 'darwin') return darwinDirs;
+  return linuxDirs;
 }

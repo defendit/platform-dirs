@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-export type WindowsPaths = {
+export type WindowsDirs = {
   /**
    * Returns the user data directory for the application.
    *
@@ -77,17 +77,17 @@ export type WindowsPaths = {
    * Returns system-wide data directories.
    *
    * @example
-   * siteDataDir(); // ["C:\\ProgramData\\SuperApp"]
+   * siteDataDir(); // ["C:\\ProgramData\\Acme\\SuperApp"]
    */
-  siteDataDir(app: string): string[];
+  siteDataDir(app: string, author?: string): string[];
 
   /**
    * Returns system-wide configuration directories.
    *
    * @example
-   * siteConfigDir(); // ["C:\\ProgramData\\SuperApp"]
+   * siteConfigDir(); // ["C:\\ProgramData\\Acme\\SuperApp"]
    */
-  siteConfigDir(app: string): string[];
+  siteConfigDir(app: string, author?: string): string[];
 
   /**
    * @example
@@ -126,7 +126,7 @@ export type WindowsPaths = {
   userDesktopDir(): string;
 };
 
-export type LinuxPaths = {
+export type LinuxDirs = {
   /**
    * @example
    * userDataDir("SuperApp"); // /home/alice/.local/share/SuperApp
@@ -147,27 +147,27 @@ export type LinuxPaths = {
 
   /**
    * @example
-   * userLogDir("SuperApp"); // /home/alice/.cache/SuperApp/logs
+   * userLogDir("SuperApp"); // /home/alice/.local/state/SuperApp/logs
    */
   userLogDir(app: string, author?: string): string;
 
   /**
    * @example
-   * runtimeDir(); // /run/user/1000
+   * runtimeDir(app); // /run/user/1000/app
    */
-  runtimeDir(): string | null;
+  runtimeDir(app: string): string | null;
 
   /**
    * @example
-   * siteDataDir(); // ["/usr/local/share", "/usr/share"]
+   * siteDataDir(app); // ["/usr/local/share/app", "/usr/share/app"]
    */
-  siteDataDir(): string[];
+  siteDataDir(app: string): string[];
 
   /**
    * @example
-   * siteConfigDir(); // ["/etc/xdg"]
+   * siteConfigDir(app); // ["/etc/xdg/app"]
    */
-  siteConfigDir(): string[];
+  siteConfigDir(app: string): string[];
 
   /**
    * @example
@@ -206,7 +206,7 @@ export type LinuxPaths = {
   userDesktopDir(): string;
 };
 
-export type DarwinPaths = {
+export type DarwinDirs = {
   /**
    * @example
    * userDataDir("SuperApp"); // /Users/alice/Library/Application Support/SuperApp
@@ -241,13 +241,13 @@ export type DarwinPaths = {
    * @example
    * siteDataDir(); // ["/Library/Application Support"]
    */
-  siteDataDir(): string[];
+  siteDataDir(app: string): string[];
 
   /**
    * @example
    * siteConfigDir(); // ["/Library/Preferences"]
    */
-  siteConfigDir(): string[];
+  siteConfigDir(app: string): string[];
 
   /**
    * @example
@@ -287,15 +287,15 @@ export type DarwinPaths = {
 };
 
 // /** Platform path type map by Node platform identifier. */
-export type PlatformPathsMap = {
-  win32: WindowsPaths;
-  darwin: DarwinPaths;
-  linux: LinuxPaths;
-  [key: string]: WindowsPaths | DarwinPaths | LinuxPaths; // fallback to union for unknown platforms
+export type PlatformDirsMap = {
+  win32: WindowsDirs;
+  darwin: DarwinDirs;
+  linux: LinuxDirs;
+  [key: string]: WindowsDirs | DarwinDirs | LinuxDirs; // fallback to union for unknown platforms
 };
 
 /** Union type of supported platforms. */
-export type Platform = keyof PlatformPathsMap;
+export type Platform = keyof PlatformDirsMap;
 
 /** Platform-specific path type by platform key. */
-export type PlatformPaths<T extends Platform = Platform> = PlatformPathsMap[T];
+export type PlatformDirs<T extends Platform = Platform> = PlatformDirsMap[T];

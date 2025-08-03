@@ -24,7 +24,7 @@ SOFTWARE.
 
 import { homedir } from 'os';
 import { isAbsolute, win32 } from 'path';
-import type { WindowsPaths } from '../types';
+import type { WindowsDirs } from '../types';
 
 const env = process.env;
 const join = win32.join;
@@ -33,12 +33,12 @@ export const getWinBase = (roaming?: boolean): string => {
   const HOME = homedir();
   if (!roaming) {
     const local = env.LOCALAPPDATA || join(HOME, 'AppData', 'Local');
-    /* c8 ignore next 3 -- this is tested 70-73 in win32.test */
+    /* c8 ignore next 3 -- this is in win32.test */
     return isAbsolute(local) ? local : join(HOME, 'AppData', 'Local');
   }
 
   const roamingBase = env.APPDATA || join(HOME, 'AppData', 'Roaming');
-  /* c8 ignore next 3 -- this is tested 70-73 in win32.test */
+  /* c8 ignore next 3 -- this is in win32.test */
   return isAbsolute(roamingBase) ? roamingBase : join(HOME, 'AppData', 'Roaming');
 };
 
@@ -46,19 +46,19 @@ export const getProgramData = (): string => {
   const systemDrive = env.SystemDrive || 'C:';
   const fallback = join(systemDrive, 'ProgramData');
   const programData = env.PROGRAMDATA || fallback;
-  /* c8 ignore next 3 -- this is tested 79-82 in win32.test */
+  /* c8 ignore next 3 -- this is tested in win32.test */
   return isAbsolute(programData) ? programData : fallback;
 };
 
-export const windowsPaths: WindowsPaths = {
+export const windowsDirs: WindowsDirs = {
   userDataDir: (app, author, roaming) => join(getWinBase(roaming), author || '', app),
   userConfigDir: (app, author, roaming) => join(getWinBase(roaming), author || '', app),
   userCacheDir: (app, author, roaming) => join(getWinBase(roaming), author || '', app, 'Cache'),
   userLogDir: (app, author, roaming) =>
-    join(windowsPaths.userCacheDir(app, author, roaming), 'Logs'),
+    join(windowsDirs.userCacheDir(app, author, roaming), 'Logs'),
   runtimeDir: () => null,
-  siteDataDir: (app) => [join(getProgramData(), app || '')],
-  siteConfigDir: (app) => [join(getProgramData(), app || '')],
+  siteDataDir: (app, author) => [join(getProgramData(), author || '', app || '')],
+  siteConfigDir: (app, author) => [join(getProgramData(), author || '', app || '')],
   userDocumentsDir: () => join(homedir(), 'Documents'),
   userDownloadsDir: () => join(homedir(), 'Downloads'),
   userPicturesDir: () => join(homedir(), 'Pictures'),

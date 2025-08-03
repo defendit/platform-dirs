@@ -22,47 +22,55 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { homedir } from 'os';
-import { join, isAbsolute } from 'path';
-import type { LinuxPaths } from '../types';
+import { isAbsolute } from 'path';
+import { homedir, userInfo } from 'os';
+import type { LinuxDirs } from '../types';
 import { getXdgUserDir } from '../xdg-user-dirs';
 
 const HOME = homedir();
 
-export const linuxPaths: LinuxPaths = {
+export const linuxDirs: LinuxDirs = {
   userDataDir: (app) => {
     const base = process.env.XDG_DATA_HOME;
-    const dir = base && isAbsolute(base) ? base : join(HOME, '.local', 'share');
-    return join(dir, app);
+    const dir = base && isAbsolute(base) ? base : `${HOME}/.local/share`;
+    return `${dir}/${app}`;
   },
 
   userConfigDir: (app) => {
     const base = process.env.XDG_CONFIG_HOME;
-    const dir = base && isAbsolute(base) ? base : join(HOME, '.config');
-    return join(dir, app);
+    const dir = base && isAbsolute(base) ? base : `${HOME}/.config`;
+    return `${dir}/${app}`;
   },
 
   userCacheDir: (app) => {
     const base = process.env.XDG_CACHE_HOME;
-    const dir = base && isAbsolute(base) ? base : join(HOME, '.cache');
-    return join(dir, app);
+    const dir = base && isAbsolute(base) ? base : `${HOME}/.cache`;
+    return `${dir}/${app}`;
   },
 
-  userLogDir: (app) => join(linuxPaths.userCacheDir(app), 'logs'),
-
-  runtimeDir: () => {
-    const dir = process.env.XDG_RUNTIME_DIR;
-    return dir && isAbsolute(dir) ? dir : null;
+  userLogDir: (app) => {
+    const base = process.env.XDG_STATE_HOME;
+    const dir = base && isAbsolute(base) ? base : `${HOME}/.local/state`;
+    return `${dir}/${app}/logs`;
   },
 
-  siteDataDir: () => {
+  runtimeDir: (app) => {
+    const dir = process.env.XDG_RUNTIME_DIR || `/run/user/${userInfo().uid}`;
+    return dir && isAbsolute(dir) ? `${dir}/${app}` : null;
+  },
+
+  siteDataDir: (app) => {
     const raw = process.env.XDG_DATA_DIRS || '/usr/local/share:/usr/share';
-    return raw.split(':').filter((p) => isAbsolute(p));
+    const filtered = raw.split(':').filter((p) => isAbsolute(p));
+    /* c8 ignore next 2 in - tested linux.test */
+    return filtered.map((p) => `${p}/${app || ''}`);
   },
 
-  siteConfigDir: () => {
+  siteConfigDir: (app) => {
     const raw = process.env.XDG_CONFIG_DIRS || '/etc/xdg';
-    return raw.split(':').filter((p) => isAbsolute(p));
+    const filtered = raw.split(':').filter((p) => isAbsolute(p));
+    /* c8 ignore next 2 in - tested in linux.test */
+    return filtered.map((p) => `${p}/${app || ''}`);
   },
 
   userDocumentsDir: () => getXdgUserDir('XDG_DOCUMENTS_DIR', 'Documents'),

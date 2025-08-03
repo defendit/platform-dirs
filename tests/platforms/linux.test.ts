@@ -22,70 +22,183 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Compatibility: Bun or Vitest
-import { userDataDir, userConfigDir, userCacheDir, userLogDir, runtimeDir } from '../../index';
 import { join } from 'path';
+import { platformDirs } from '../../src/platform';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// If not running in Bun, import Vitest globals at the top level
-const isBun = typeof Bun !== 'undefined';
-if (!isBun) {
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  var { describe, it, expect, beforeAll, afterAll } = await import('vitest');
-} else {
-  // If running in Bun, use Bun's global test functions
-  // @ts-ignore
-  var { describe, it, expect, beforeAll, afterAll } = await import('bun:test');
-}
-// If running in Bun, use Bun's global test functions
+const app = 'TestApp';
+const author = 'DefendIT';
+const HOME = '/home/testuser';
 
 // Environment setup
 const ORIGINAL_ENV = { ...process.env };
 
-const app = 'TestApp';
-const author = 'DefendIT';
-if (process.platform === 'linux') {
-  describe('platform-dirs', () => {
-    beforeAll(() => {
-      process.env.XDG_DATA_HOME = '/tmp/xdg_data';
-      process.env.XDG_CONFIG_HOME = '/tmp/xdg_config';
-      process.env.XDG_CACHE_HOME = '/tmp/xdg_cache';
-      process.env.XDG_RUNTIME_DIR = '/tmp/xdg_runtime';
+describe('linux platform paths (mocked to /home/testuser with XDG spec)', () => {
+  beforeEach(() => {
+    process.env = {
+      ...ORIGINAL_ENV,
+      HOME,
+      XDG_DATA_HOME: join(HOME, '.local', 'share'),
+      XDG_CONFIG_HOME: join(HOME, '.config'),
+      XDG_CACHE_HOME: join(HOME, '.cache'),
+      XDG_STATE_HOME: join(HOME, '.local', 'state'),
+      XDG_RUNTIME_DIR: '', // Explicitly set to empty to simulate unavailable runtime dir
+      XDG_DATA_DIRS: '/usr/local/share:/usr/share',
+      XDG_CONFIG_DIRS: '/etc/xdg',
+    };
+
+    vi.resetModules();
+    vi.mock('os', () => ({
+      homedir: () => '/home/testuser',
+      platform: () => 'linux',
+      userInfo: () => ({ uid: 1000 }), // Mock user info for runtimeDir
+    }));
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    process.env = { ...ORIGINAL_ENV };
+  });
+
+  const {
+    userLogDir,
+    runtimeDir,
+    siteDataDir,
+    userDataDir,
+    userCacheDir,
+    userMusicDir,
+    userVideosDir,
+    userConfigDir,
+    siteConfigDir,
+    userDesktopDir,
+    userPicturesDir,
+    userDocumentsDir,
+    userDownloadsDir,
+  } = platformDirs('linux');
+
+  describe('userDataDir', () => {
+    it('returns absolute path from XDG_DATA_HOME', () => {
+      expect(userDataDir(app, author)).toBe(`${HOME}/.local/share/${app}`);
     });
 
-    afterAll(() => {
-      process.env = ORIGINAL_ENV;
-    });
-
-    it('resolves userDataDir correctly', () => {
-      const path = userDataDir(app, author);
-      expect(path).toBe(join('/tmp/xdg_data', app));
-    });
-
-    it('resolves userConfigDir correctly', () => {
-      const path = userConfigDir(app, author);
-      expect(path).toBe(join('/tmp/xdg_config', app));
-    });
-
-    it('resolves userCacheDir correctly', () => {
-      const path = userCacheDir(app, author);
-      expect(path).toBe(join('/tmp/xdg_cache', app));
-    });
-
-    it('resolves userLogDir correctly', () => {
-      const path = userLogDir(app, author);
-      expect(path).toBe(join('/tmp/xdg_cache', app, 'logs'));
-    });
-
-    it('resolves runtimeDir correctly', () => {
-      const path = runtimeDir();
-      expect(path).toBe('/tmp/xdg_runtime');
+    it('returns default if XDG_DATA_HOME is not absolute', () => {
+      process.env.XDG_DATA_HOME = 'relative/path';
+      vi.resetModules();
+      expect(userDataDir(app, author)).toBe(`${HOME}/.local/share/${app}`);
     });
   });
-} else {
-  describe('platform-dirs', () => {
-    it('linux tests should not run on non-Linux platforms', () => {
-      expect(true).toBe(true);
+
+  describe('userConfigDir', () => {
+    it('returns absolute path from XDG_CONFIG_HOME', () => {
+      expect(userConfigDir(app, author)).toBe(`${HOME}/.config/${app}`);
+    });
+
+    it('returns default if XDG_CONFIG_HOME is not absolute', () => {
+      process.env.XDG_CONFIG_HOME = 'relative/config';
+      vi.resetModules();
+      expect(userConfigDir(app, author)).toBe(`${HOME}/.config/${app}`);
     });
   });
-}
+
+  describe('userCacheDir', () => {
+    it('returns absolute path from XDG_CACHE_HOME', () => {
+      expect(userCacheDir(app, author)).toBe(`${HOME}/.cache/${app}`);
+    });
+
+    it('returns default if XDG_CACHE_HOME is not absolute', () => {
+      process.env.XDG_CACHE_HOME = 'not/absolute';
+      vi.resetModules();
+      expect(userCacheDir(app, author)).toBe(`${HOME}/.cache/${app}`);
+    });
+  });
+
+  describe('userLogDir', () => {
+    it('returns absolute path from XDG_STATE_HOME', () => {
+      expect(userLogDir(app, author)).toBe(`${HOME}/.local/state/${app}/logs`);
+    });
+
+    it('returns default if XDG_STATE_HOME is not absolute', () => {
+      process.env.XDG_STATE_HOME = 'relative/state';
+      vi.resetModules();
+      expect(userLogDir(app, author)).toBe(`${HOME}/.local/state/${app}/logs`);
+    });
+  });
+
+  describe('runtimeDir', () => {
+    it('returns absolute path from default if XDG_RUNTIME_DIR is empty', () => {
+      expect(runtimeDir(app)).toBe(`/run/user/1000/${app}`);
+    });
+
+    it('returns absolute path from XDG_RUNTIME_DIR if set and absolute', () => {
+      process.env.XDG_RUNTIME_DIR = '/tmp/runtime';
+      vi.resetModules();
+      expect(runtimeDir(app)).toBe(`/tmp/runtime/${app}`);
+    });
+
+    it('returns default if XDG_RUNTIME_DIR is not absolute', () => {
+      process.env.XDG_RUNTIME_DIR = 'relative/runtime';
+      vi.resetModules();
+      expect(runtimeDir(app)).toBe(null);
+    });
+  });
+
+  describe('siteDataDir', () => {
+    it('resolves siteDataDir from XDG_DATA_DIRS', () => {
+      expect(siteDataDir(app)).toEqual([`/usr/local/share/${app}`, `/usr/share/${app}`]);
+    });
+
+    it('returns default if XDG_DATA_DIRS is not set', () => {
+      delete process.env.XDG_DATA_DIRS;
+      vi.resetModules();
+      expect(siteDataDir(app)).toEqual([`/usr/local/share/${app}`, `/usr/share/${app}`]);
+    });
+
+    it('returns an empty array if no absolute paths are found', () => {
+      process.env.XDG_DATA_DIRS = 'relative/path';
+      vi.resetModules();
+      expect(siteDataDir(app)).toEqual([]);
+    });
+  });
+
+  describe('siteConfigDir', () => {
+    it('resolves siteConfigDir correctly', () => {
+      expect(siteConfigDir(app)).toEqual([`/etc/xdg/${app}`]);
+    });
+
+    it('returns default if XDG_CONFIG_DIRS is not set', () => {
+      delete process.env.XDG_CONFIG_DIRS;
+      vi.resetModules();
+      expect(siteConfigDir(app)).toEqual([`/etc/xdg/${app}`]);
+    });
+
+    it('returns an empty array if no absolute paths are found', () => {
+      process.env.XDG_CONFIG_DIRS = 'relative/path';
+      vi.resetModules();
+      expect(siteConfigDir(app)).toEqual([]);
+    });
+  });
+
+  it('resolves userDocumentsDir correctly', () => {
+    expect(userDocumentsDir()).toBe(`${HOME}/Documents`);
+  });
+
+  it('resolves userDownloadsDir correctly', () => {
+    expect(userDownloadsDir()).toBe(`${HOME}/Downloads`);
+  });
+
+  it('resolves userPicturesDir correctly', () => {
+    expect(userPicturesDir()).toBe(`${HOME}/Pictures`);
+  });
+
+  it('resolves userVideosDir correctly', () => {
+    expect(userVideosDir()).toBe(`${HOME}/Videos`);
+  });
+
+  it('resolves userMusicDir correctly', () => {
+    expect(userMusicDir()).toBe(`${HOME}/Music`);
+  });
+
+  it('resolves userDesktopDir correctly', () => {
+    expect(userDesktopDir()).toBe(`${HOME}/Desktop`);
+  });
+});

@@ -1,6 +1,6 @@
 {
   "name": "dis-platform-dirs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency Bun/Node.js implementation of Python's platformdirs for determining platform-specific user directories.",
   "type": "module",
   "author": {
@@ -33,8 +33,7 @@
     }
   },
   "files": [
-    "dist",
-    "index.ts"
+    "dist"
   ],
   "keywords": [
     "platformdirs",
@@ -62,10 +61,10 @@
     "typescript": "^5.9.2"
   },
   "scripts": {
-    "test": "bun test",
-    "test:darwin": "bun test tests/darwin.test.ts",
-    "test:linux": "bun test tests/linux.test.ts",
-    "test:win32": "bun test tests/win32.test.ts",
+    "test": "bunx vitest run",
+    "test:darwin": "bunx vitest run tests/platforms/darwin.test.ts",
+    "test:linux": "bunx vitest run tests/platforms/linux.test.ts",
+    "test:win32": "bunx vitest run tests/platforms/win32.test.ts",
     "coverage": "bunx vitest run --coverage",
     "lint": "bunx eslint . --ext .ts",
     "lint:fix": "bunx eslint . --ext .ts --fix",
@@ -74,9 +73,9 @@
     "clean": "rm -rf ./dist",
     "build": "bun run clean && bun run build:all",
     "build:types": "bunx tsc --project tsconfig.json",
-    "build:esm": "bun build index.ts --outfile dist/index.esm.js --target node --format esm",
-    "build:cjs": "bun build index.ts --outfile dist/index.cjs.js --target node --format cjs",
-    "build:iife": "bun build index.ts --outfile dist/index.iife.js --target node --format iife",
+    "build:esm": "bun build ./src/index.ts --outfile ./dist/index.esm.js --target node --format esm",
+    "build:cjs": "bun build ./src/index.ts --outfile ./dist/index.cjs.js --target node --format cjs",
+    "build:iife": "bun build ./src/index.ts --outfile ./dist/index.iife.js --target node --format iife",
     "build:all": "bun run build:esm && bun run build:cjs && bun run build:iife && bun run build:types"
   }
 }

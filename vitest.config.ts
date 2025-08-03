@@ -22,23 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { homedir } from 'os';
-import type { DarwinDirs } from '../types';
+import { defineConfig } from 'vitest/config';
 
-const HOME = homedir();
-
-export const darwinDirs: DarwinDirs = {
-  userDataDir: (app) => `${HOME}/Library/Application Support/${app}`,
-  userConfigDir: (app) => `${HOME}/Library/Preferences/${app}`,
-  userCacheDir: (app) => `${HOME}/Library/Caches/${app}`,
-  userLogDir: (app) => `${HOME}/Library/Logs/${app}`,
-  runtimeDir: () => null,
-  siteDataDir: (app) => [`/Library/Application Support/${app}`],
-  siteConfigDir: (app) => [`/Library/Preferences/${app}`],
-  userDocumentsDir: () => `${HOME}/Documents`,
-  userDownloadsDir: () => `${HOME}/Downloads`,
-  userPicturesDir: () => `${HOME}/Pictures`,
-  userVideosDir: () => `${HOME}/Movies`,
-  userMusicDir: () => `${HOME}/Music`,
-  userDesktopDir: () => `${HOME}/Desktop`,
-};
+export default defineConfig({
+  test: {
+    coverage: {
+      exclude: ['vitest.config.ts', '**/types.ts', '**/*.d.ts', '**/*.js'],
+    },
+  },
+});

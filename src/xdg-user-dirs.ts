@@ -38,6 +38,7 @@ export function getXdgUserDir(key: string, fallback: string): string {
 
   if (!match) return join(homedir(), fallback);
 
+  /* c8 ignore next -- this is tested in xdg-user-dirs.test.ts */
   const resolved = match[1]?.replace(/^\$HOME/, homedir()) ?? '';
   return isAbsolute(resolved) ? resolved : join(homedir(), fallback);
 }

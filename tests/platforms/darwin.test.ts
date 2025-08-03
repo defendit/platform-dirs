@@ -22,59 +22,105 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Compatibility: Bun or Vitest
-import { userLogDir, runtimeDir, userDataDir, userCacheDir, userConfigDir } from '../../index';
 import { join } from 'path';
-import { homedir } from 'os';
+import { platformDirs } from '../../src/platform';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Vite is used for coverage reporting via `vitest`
-// While the regular tests are run with Bun
-const isBun = typeof Bun !== 'undefined';
-if (!isBun) {
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  var { describe, it, expect } = await import('vitest');
-} else {
-  // If running in Bun, use Bun's global test functions
-  // @ts-ignore
-  var { describe, it, expect } = await import('bun:test');
-}
-
-const HOME = homedir();
 const app = 'TestApp';
 const author = 'DefendIT';
-// Only run tests on macOS (darwin)
-if (process.platform === 'darwin') {
-  describe('platform-dirs-darwin', () => {
-    it('resolves userDataDir correctly', () => {
-      const path = userDataDir(app, author);
-      expect(path).toBe(join(HOME, 'Library', 'Application Support', app));
-    });
+const HOME = '/Users/TestUser'; // Mocked home directory for testing
 
-    it('resolves userConfigDir correctly', () => {
-      const path = userConfigDir(app, author);
-      expect(path).toBe(join(HOME, 'Library', 'Preferences', app));
-    });
+const {
+  userLogDir,
+  runtimeDir,
+  siteDataDir,
+  userDataDir,
+  userCacheDir,
+  userMusicDir,
+  userVideosDir,
+  userConfigDir,
+  siteConfigDir,
+  userDesktopDir,
+  userPicturesDir,
+  userDocumentsDir,
+  userDownloadsDir,
+} = platformDirs('darwin');
 
-    it('resolves userCacheDir correctly', () => {
-      const path = userCacheDir(app, author);
-      expect(path).toBe(join(HOME, 'Library', 'Caches', app));
-    });
-
-    it('resolves userLogDir correctly', () => {
-      const path = userLogDir(app, author);
-      expect(path).toBe(join(HOME, 'Library', 'Logs', app));
-    });
-
-    it('resolves runtimeDir correctly', () => {
-      const path = runtimeDir();
-      expect(path).toBe(null);
-    });
+describe('darwin platform paths (mocked to /Users/TestUser)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.mock('os', () => ({
+      homedir: () => '/Users/TestUser',
+      platform: () => 'darwin',
+    }));
   });
-} else {
-  describe('platform-dirs-darwin', () => {
-    it('macOS tests should not run on non-macOS platforms', () => {
-      expect(true).toBe(true);
-    });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
-}
+
+  it('resolves userDataDir correctly', () => {
+    const path = userDataDir(app, author);
+    expect(path).toBe(join(HOME, 'Library', 'Application Support', app));
+  });
+
+  it('resolves userConfigDir correctly', () => {
+    const path = userConfigDir(app, author);
+    expect(path).toBe(join(HOME, 'Library', 'Preferences', app));
+  });
+
+  it('resolves userCacheDir correctly', () => {
+    const path = userCacheDir(app, author);
+    expect(path).toBe(join(HOME, 'Library', 'Caches', app));
+  });
+
+  it('resolves userLogDir correctly', () => {
+    const path = userLogDir(app, author);
+    expect(path).toBe(join(HOME, 'Library', 'Logs', app));
+  });
+
+  it('resolves runtimeDir correctly', () => {
+    const path = runtimeDir();
+    expect(path).toBe(null);
+  });
+
+  it('resolves siteDataDir correctly', () => {
+    const path = siteDataDir('SiteApp');
+    expect(path).toEqual(['/Library/Application Support/SiteApp']);
+  });
+
+  it('resolves siteConfigDir correctly', () => {
+    const path = siteConfigDir('SiteApp');
+    expect(path).toEqual(['/Library/Preferences/SiteApp']);
+  });
+
+  it('resolves userDocumentsDir correctly', () => {
+    const path = userDocumentsDir();
+    expect(path).toBe(join(HOME, 'Documents'));
+  });
+
+  it('resolves userDownloadsDir correctly', () => {
+    const path = userDownloadsDir();
+    expect(path).toBe(join(HOME, 'Downloads'));
+  });
+
+  it('resolves userPicturesDir correctly', () => {
+    const path = userPicturesDir();
+    expect(path).toBe(join(HOME, 'Pictures'));
+  });
+
+  it('resolves userVideosDir correctly', () => {
+    const path = userVideosDir();
+    expect(path).toBe(join(HOME, 'Movies'));
+  });
+
+  it('resolves userMusicDir correctly', () => {
+    const path = userMusicDir();
+    expect(path).toBe(join(HOME, 'Music'));
+  });
+
+  it('resolves userDesktopDir correctly', () => {
+    const path = userDesktopDir();
+    expect(path).toBe(join(HOME, 'Desktop'));
+  });
+});

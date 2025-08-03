@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Compatibility: Bun or Vitest
 import path from 'path';
 import { getWinBase, getProgramData } from '../../src/platforms/win32';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -64,7 +63,7 @@ describe('win32 platform paths (mocked to C:\\Users\\TestUser)', () => {
     LOCALAPPDATA = DEFAULT_LOCALAPPDATA;
     // Dynamic import for ES module compatibility
     const platformModule = await import('../../src/platform');
-    mod = platformModule.platformPaths('win32');
+    mod = platformModule.platformDirs('win32');
   });
 
   afterEach(() => {

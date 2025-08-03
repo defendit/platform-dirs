@@ -22,19 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { platformPaths } from './platform';
-import type { PlatformPathsMap } from './types';
-
+import { platformDirs } from './platform';
+import type { PlatformDirsMap } from './types';
 export type {
   Platform,
-  LinuxPaths,
-  DarwinPaths,
-  WindowsPaths,
-  PlatformPaths,
-  PlatformPathsMap,
+  LinuxDirs,
+  DarwinDirs,
+  WindowsDirs,
+  PlatformDirs,
+  PlatformDirsMap,
 } from './types';
 
-export { platformPaths } from './platform';
+const dirs = platformDirs();
 export const {
   userDataDir,
   userConfigDir,
@@ -49,4 +48,6 @@ export const {
   userVideosDir,
   userMusicDir,
   userDesktopDir,
-}: PlatformPathsMap[NodeJS.Platform] = platformPaths();
+} = dirs as PlatformDirsMap[NodeJS.Platform];
+export default dirs;
+export { platformDirs } from './platform';
